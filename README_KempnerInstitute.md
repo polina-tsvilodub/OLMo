@@ -83,7 +83,7 @@ Note that the following items should be updated in the above SLURM script skelet
 * `export CHECKPOINTS_PATH=</path/to/save/checkpoints`    - Path to the folder to save the checkpoints - default: `./<job-name>_<job-id>/checkpoints`
 * `python -u scripts/train.py <config_file>` - Pass in either 7b_Olmo.yaml or 1b_Olmo.yaml config files to the train.py (by default it will run 7b OLMo using FSDP you can change the input config file to `configs/kempner_institute/1b_Olmo.yaml` in order to run 1b OLMo using DDP).
 
-Submit the SLURM by the following command.
+Submit the SLURM job by the following command.
 
 ```bash
 sbatch scripts/kempner_institute/submit_srun.sh
