@@ -52,7 +52,7 @@ pip3 install -e .[all]
 
 ## 2. Run OLMo on the Kempner Institute HPC Cluster
 
-Now that we have the Conda environment ready, it's time to run OLMo. To do that, we need a config file to pass it to the training script to specify all OLMo configs and hyperparameters as well as a slurm script to submit the job on the HPC cluster. 
+Now that we have the Conda environment ready, it's time to run OLMo. To do that, we need a config file to pass it to the training script to specify all OLMo configs and hyperparameters as well as a SLURM script to submit the job on the HPC cluster. 
 
 ### 2.1. Config file
 
@@ -70,15 +70,21 @@ wandb:
   project: <project_name>
 ```
 
-### 2.2. Slurm Script
+### 2.2. SLURM Script
 
-To run OLMo on the HPC cluster using slurm, you may use the slurm script skeleton in [scripts/kempner_institute/submit_srun.sh](scripts/kempner_institute/submit_srun.sh). This will run OLMo using 4 H100 GPUs on a single node.
-Note that the following items should be updated in the above slurm script skeleton:
+To run OLMo on the HPC cluster using SLURM, you may use the SLURM script skeleton in [scripts/kempner_institute/submit_srun.sh](scripts/kempner_institute/submit_srun.sh). This will run OLMo using 4 H100 GPUs on a single node.
+Note that the following items should be updated in the above SLURM script skeleton:
 
 * `#SBATCH --job-name=<job-name>`       - Name for your submitting job - default: `run_olmo_1n4g` (`1n4g` stands for 4 gpus on the same node)
 * `#SBATCH --account=<account_name>`    - Account name to use the cluster
-* `#SBATCH --output <output_path>`      - File to which STDOUT will be written - default: `./<job-name>_<job-id>/output_<job-id>.out` in the current directory (`job-id` will be assigned by slurm)
+* `#SBATCH --output <output_path>`      - File to which STDOUT will be written - default: `./<job-name>_<job-id>/output_<job-id>.out` in the current directory (`job-id` will be assigned by SLURM)
 * `#SBATCH --error <error_output_path>` - File to which STDERR will be written - default: `./<job-name>_<job-id>/error_<job-id>.out` in the current directory
 * `conda activate </path/to/your/OLMo/conda-environment>` - Activate conda environment that you just created - by default it activates conda environment named `olmo_test` from the default conda path.  
 * `export CHECKPOINTS_PATH=</path/to/save/checkpoints`    - Path to the folder to save the checkpoints - default: `./<job-name>_<job-id>/checkpoints`
 * `python -u scripts/train.py <config_file>` - Pass in either 7b_Olmo.yaml or 1b_Olmo.yaml config files to the train.py (by default it will run 7b OLMo using FSDP you can change the input config file to `configs/kempner_institute/1b_Olmo.yaml` in order to run 1b OLMo using DDP).
+
+Submit the SLURM job by the following command.
+
+```bash
+sbatch scripts/kempner_institute/submit_srun.sh
+```
