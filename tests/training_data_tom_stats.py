@@ -62,6 +62,7 @@ def get_batch_instances(batch_idx: int) -> list[list[int]]:
             cntr, match = count_in_line(token_ids, sequence)
             sequence_counts[sequence] += cntr
             match_instances.append(tokenizer.decode(match))
+        print("counter: ", sequence_counts)
     return match_instances
 
 
@@ -86,7 +87,6 @@ if __name__ == "__main__":
         })
         result.to_csv(
                 results_path + f"tom_matches_{args.num_batches}_batches.csv",
-                sep="|",
                 index=False,
                 mode="a",
                 header=not os.path.exists(
