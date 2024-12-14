@@ -11,6 +11,8 @@ from olmo.data import build_memmap_dataset
 import transformers
 import argparse
 from time import time
+import pandas as pd
+import os
 
 tokenizer = transformers.AutoTokenizer.from_pretrained("allenai/OLMo-1B-0724-hf")
 tom_vocab = [" think", " thinks", " believe", " believes", " know", " knows", " thought", " knew", " believed"]
@@ -43,25 +45,27 @@ def count_in_line(line, sequence):
     for i in range(len(line) - seq_len + 1):
         if tuple(line[i:i + seq_len]) == sequence:
             count += 1
-    return count
+    return count, line
 
 def get_batch_instances(batch_idx: int) -> list[list[int]]:
     batch_start = batch_idx * batch_size
     batch_end = (batch_idx + 1) * batch_size
     batch_indices = global_indices[batch_start:batch_end]
-    batch_instances = []
+    match_instances = []
     for index in batch_indices:
         token_ids = dataset[index]["input_ids"].tolist()
         # check occurrences of ToM tokens
         for sequence in tom_sequences:
-            sequence_counts[sequence] += count_in_line(token_ids, sequence)
-        batch_instances.append(token_ids)
-    return batch_instances
+            cntr, match = count_in_line(token_ids, sequence)
+            sequence_counts[sequence] += cntr
+            match_instances.append(tokenizer.decode(match))
+    return match_instances
 
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser()
-    args_parser.add_argument("--num_batches", type=int, default=100)
+    results_path = "../tom_pretests/"
+    args_parser.add_argument("--num_batches", type=int, default=10)
 
     args = args_parser.parse_args()
     print(" ---- initial ToM token counts: ----- \n", sequence_counts)
@@ -70,9 +74,22 @@ if __name__ == "__main__":
     overall_tokens = 0
     # Get all 2048 x 2048 token IDs in the first 100 batches.
     for i in range(args.num_batches):
-        current_batch = get_batch_instances(i)
+        current_batch_matches = get_batch_instances(i)
         # add the number of tokens in the batch to the overall count
-        overall_tokens += len(current_batch) * len(current_batch[0])
+        overall_tokens += 2048 * 2048
+        # dynamically write out matches for checking
+        result = pd.DataFrame({
+            "matches": current_batch_matches
+        })
+        result.to_csv(
+                results_path + f"tom_matches_{args.num_batches}_batches.csv",
+                sep="|",
+                index=False,
+                mode="a",
+                header=not os.path.exists(
+                    results_path + f"tom_matches_{args.num_batches}_batches.csv",
+                )
+            )
     # print resulting ToM token counts
     print("----- final ToM token counts: ------ \n", sequence_counts)
     print("\n* total tokens:", overall_tokens)
