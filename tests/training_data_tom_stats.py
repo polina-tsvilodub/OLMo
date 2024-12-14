@@ -13,6 +13,9 @@ import argparse
 from time import time
 import pandas as pd
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 tokenizer = transformers.AutoTokenizer.from_pretrained("allenai/OLMo-1B-0724-hf")
 tom_vocab = [" think", " thinks", " believe", " believes", " know", " knows", " thought", " knew", " believed"]
